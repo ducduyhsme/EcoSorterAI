@@ -32,3 +32,26 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Node modules
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# macOS
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+
+# TensorFlow models
+tfjs_model/
+
+# Temporary files
+*.tmp
+*.temp
