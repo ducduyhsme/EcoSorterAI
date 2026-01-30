@@ -4,6 +4,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { initializeModel } from './src/services/aiService';
 
 // Import screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -15,7 +17,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-function MainTabs() {
+function MainTabs({ onLogout }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -41,7 +43,9 @@ function MainTabs() {
       <Tab.Screen name="Camera" component={CameraScreen} options={{ title: 'Scan' }} />
       <Tab.Screen name="History" component={HistoryScreen} options={{ title: 'History' }} />
       <Tab.Screen name="Ranking" component={RankingScreen} options={{ title: 'Ranking' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+      <Tab.Screen name="Profile" options={{ title: 'Profile' }}>
+        {props => <ProfileScreen {...props} onLogout={onLogout} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
@@ -51,17 +55,23 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkLoginStatus();
+    initializeApp();
   }, []);
 
-  const checkLoginStatus = async () => {
+  const initializeApp = async () => {
     try {
+      // Check login status
       const user = await AsyncStorage.getItem('user');
       if (user !== null) {
         setIsLoggedIn(true);
       }
+      
+      // Initialize TensorFlow model in background
+      initializeModel().catch(error => {
+        console.error('Failed to initialize TensorFlow model:', error);
+      });
     } catch (error) {
-      console.error('Error checking login status:', error);
+      console.error('Error initializing app:', error);
     } finally {
       setIsLoading(false);
     }
@@ -76,8 +86,16 @@ export default function App() {
     }
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
   if (isLoading) {
-    return null; // Or a loading spinner
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
   }
 
   return (
@@ -88,9 +106,20 @@ export default function App() {
             {props => <LoginScreen {...props} onLogin={handleLogin} />}
           </Stack.Screen>
         ) : (
-          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="Main">
+            {props => <MainTabs {...props} onLogout={handleLogout} />}
+          </Stack.Screen>
         )}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+});

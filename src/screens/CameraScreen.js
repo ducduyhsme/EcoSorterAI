@@ -14,6 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { classifyImage } from '../services/aiService';
 import { saveClassification, uploadToServer } from '../services/storageService';
+import { CONFIDENCE_THRESHOLD_LOW } from '../config/constants';
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -56,17 +57,17 @@ export default function CameraScreen() {
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
     });
 
-    if (!result.canceled && result.assets[0]) {
+    if (!pickerResult.canceled && pickerResult.assets[0]) {
       setIsProcessing(true);
-      setCapturedImage(result.assets[0].uri);
-      await processImage(result.assets[0].uri);
+      setCapturedImage(pickerResult.assets[0].uri);
+      await processImage(pickerResult.assets[0].uri);
       setIsProcessing(false);
     }
   };
@@ -85,7 +86,7 @@ export default function CameraScreen() {
       });
 
       // If confidence is low, upload to server for better classification
-      if (classification.confidence < 0.7) {
+      if (classification.confidence < CONFIDENCE_THRESHOLD_LOW) {
         await uploadToServer(imageUri, classification);
       }
     } catch (error) {
@@ -185,12 +186,12 @@ export default function CameraScreen() {
                   <Text style={styles.resultLabel}>Confidence:</Text>
                   <Text style={[
                     styles.resultValue,
-                    { color: result.confidence >= 0.7 ? '#4CAF50' : '#FF9800' }
+                    { color: result.confidence >= CONFIDENCE_THRESHOLD_LOW ? '#4CAF50' : '#FF9800' }
                   ]}>
                     {(result.confidence * 100).toFixed(1)}%
                   </Text>
                 </View>
-                {result.confidence < 0.7 && (
+                {result.confidence < CONFIDENCE_THRESHOLD_LOW && (
                   <Text style={styles.uploadInfo}>
                     ℹ️ Sent to server for better classification
                   </Text>

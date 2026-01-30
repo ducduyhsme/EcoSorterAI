@@ -1,5 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getClassificationHistory } from './storageService';
+import {
+  CONFIDENCE_THRESHOLD_MEDIUM,
+  POINTS_BASE,
+  POINTS_HIGH_CONFIDENCE,
+  POINTS_MEDIUM_CONFIDENCE,
+} from '../config/constants';
 
 const RANKINGS_KEY = 'user_rankings';
 
@@ -23,7 +29,7 @@ export async function getUserStats() {
     
     // Calculate stats
     const totalScans = history.length;
-    const accurateScans = history.filter(item => item.confidence >= 0.7).length;
+    const accurateScans = history.filter(item => item.confidence >= CONFIDENCE_THRESHOLD_MEDIUM).length;
     const points = calculatePoints(history);
     
     // Update user stats in rankings
@@ -56,13 +62,13 @@ function calculatePoints(history) {
   
   history.forEach(item => {
     // Base points for each scan
-    points += 10;
+    points += POINTS_BASE;
     
     // Bonus points for high confidence
     if (item.confidence >= 0.9) {
-      points += 20;
-    } else if (item.confidence >= 0.7) {
-      points += 10;
+      points += POINTS_HIGH_CONFIDENCE;
+    } else if (item.confidence >= CONFIDENCE_THRESHOLD_MEDIUM) {
+      points += POINTS_MEDIUM_CONFIDENCE;
     }
   });
   

@@ -1,6 +1,11 @@
 import * as tf from '@tensorflow/tfjs';
 import { getTrainingData } from './storageService';
 import { trainModel, saveModel, getModelInfo } from './aiService';
+import {
+  MIN_TRAINING_SAMPLES,
+  RETRAINING_NEW_SAMPLES_THRESHOLD,
+  RETRAINING_IMBALANCE_RATIO,
+} from '../config/constants';
 
 /**
  * Model Training Manager
@@ -15,10 +20,10 @@ export async function startTraining(onProgress) {
     // Get training data from storage
     const trainingData = await getTrainingData();
     
-    if (trainingData.images.length < 10) {
+    if (trainingData.images.length < MIN_TRAINING_SAMPLES) {
       return {
         success: false,
-        error: 'Not enough training data. Need at least 10 samples.',
+        error: `Not enough training data. Need at least ${MIN_TRAINING_SAMPLES} samples.`,
         samplesCount: trainingData.images.length,
       };
     }
@@ -201,18 +206,30 @@ export async function needsRetraining() {
     const stats = await getTrainingStats();
     
     // Criteria for retraining:
-    // 1. New data collected (50+ new samples)
+    // 1. New data collected (RETRAINING_NEW_SAMPLES_THRESHOLD+ new samples)
     // 2. Imbalanced dataset
     // 3. Poor performance (not implemented here)
     
-    const newSamplesThreshold = 50;
-    const hasEnoughNewSamples = trainingData.images.length >= newSamplesThreshold;
+    const hasEnoughNewSamples = trainingData.images.length >= RETRAINING_NEW_SAMPLES_THRESHOLD;
     
     // Check for imbalanced categories
     const counts = Object.values(stats.categoryCounts);
+    
+    // Handle edge cases
+    if (counts.length === 0) {
+      return {
+        needsRetraining: false,
+        reasons: {
+          hasEnoughNewSamples: false,
+          isImbalanced: false,
+        },
+        stats,
+      };
+    }
+    
     const maxCount = Math.max(...counts);
     const minCount = Math.min(...counts);
-    const isImbalanced = maxCount > minCount * 3;
+    const isImbalanced = counts.length > 1 && maxCount > minCount * RETRAINING_IMBALANCE_RATIO;
     
     return {
       needsRetraining: hasEnoughNewSamples || isImbalanced,

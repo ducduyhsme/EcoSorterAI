@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getClassificationHistory } from '../services/storageService';
 import { getUserStats } from '../services/rankingService';
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen({ onLogout }) {
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState({
     totalScans: 0,
@@ -49,7 +49,10 @@ export default function ProfileScreen({ navigation }) {
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.removeItem('user');
-            // Navigation will be handled by App.js
+            // Call parent logout handler to update app state
+            if (onLogout) {
+              onLogout();
+            }
           },
         },
       ]

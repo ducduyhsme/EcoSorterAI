@@ -1,5 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
+import {
+  CONFIDENCE_THRESHOLD_HIGH,
+  CONFIDENCE_THRESHOLD_LOW,
+  MAX_HISTORY_ITEMS,
+  MAX_TRAINING_SAMPLES,
+} from '../config/constants';
 
 const HISTORY_KEY = 'classification_history';
 const TRAINING_DATA_KEY = 'training_data';
@@ -15,14 +21,14 @@ export async function saveClassification(classification) {
     // Add new classification
     history.unshift(classification);
     
-    // Keep only last 100 items
-    const trimmedHistory = history.slice(0, 100);
+    // Keep only last MAX_HISTORY_ITEMS
+    const trimmedHistory = history.slice(0, MAX_HISTORY_ITEMS);
     
     // Save back to storage
     await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(trimmedHistory));
     
     // If high confidence, add to training data
-    if (classification.confidence >= 0.8) {
+    if (classification.confidence >= CONFIDENCE_THRESHOLD_HIGH) {
       await addToTrainingData(classification);
     }
     
@@ -63,8 +69,8 @@ export async function uploadToServer(imageUri, classification) {
   try {
     console.log('Uploading to server for supplementary training...');
     
-    // In a real app, this would upload to your server
-    // For now, we'll simulate the upload
+    // NOTE: Simulated upload - implement real server endpoint in production
+    console.warn('uploadToServer: Using simulated upload. Implement real server endpoint for production.');
     
     const formData = new FormData();
     formData.append('image', {
@@ -113,10 +119,10 @@ async function addToTrainingData(classification) {
     trainingData.images.push(classification.imageUri);
     trainingData.labels.push(classification.category);
     
-    // Keep only last 500 training samples
-    if (trainingData.images.length > 500) {
-      trainingData.images = trainingData.images.slice(-500);
-      trainingData.labels = trainingData.labels.slice(-500);
+    // Keep only last MAX_TRAINING_SAMPLES
+    if (trainingData.images.length > MAX_TRAINING_SAMPLES) {
+      trainingData.images = trainingData.images.slice(-MAX_TRAINING_SAMPLES);
+      trainingData.labels = trainingData.labels.slice(-MAX_TRAINING_SAMPLES);
     }
     
     await AsyncStorage.setItem(TRAINING_DATA_KEY, JSON.stringify(trainingData));
