@@ -1,7 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
 import * as FileSystem from 'expo-file-system';
-import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import {
   TRAINING_EPOCHS,
   TRAINING_BATCH_SIZE,
