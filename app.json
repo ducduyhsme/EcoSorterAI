@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Eco-Sorter AI",
+    "slug": "ecosorterai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ecosorter.ai",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to capture images of waste for classification.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photos to allow you to select images of waste for classification."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.ecosorter.ai",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Eco-Sorter AI to access your camera to capture images of waste."
+        }
+      ]
+    ]
+  }
+}
