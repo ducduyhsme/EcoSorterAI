@@ -9,7 +9,7 @@ import {
   Image,
   Modal,
 } from 'react-native';
-import { Camera } from 'expo-camera';
+import { CameraView, Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { classifyImage } from '../services/aiService';
@@ -18,7 +18,7 @@ import { CONFIDENCE_THRESHOLD_LOW } from '../config/constants';
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
-  const [type, setType] = useState(Camera.Constants.Type.back);
+  const [type, setType] = useState('back');
   const [isProcessing, setIsProcessing] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
   const [result, setResult] = useState(null);
@@ -51,7 +51,7 @@ export default function CameraScreen() {
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (permissionResult.granted === false) {
       Alert.alert('Permission Required', 'Camera roll permission is required!');
       return;
@@ -124,51 +124,50 @@ export default function CameraScreen() {
     <View style={styles.container}>
       {!capturedImage ? (
         <>
-          <Camera style={styles.camera} type={type} ref={cameraRef}>
-            <View style={styles.cameraOverlay}>
-              <View style={styles.topControls}>
-                <TouchableOpacity
-                  style={styles.flipButton}
-                  onPress={() => {
-                    setType(
-                      type === Camera.Constants.Type.back
-                        ? Camera.Constants.Type.front
-                        : Camera.Constants.Type.back
-                    );
-                  }}
-                >
-                  <Ionicons name="camera-reverse" size={32} color="#fff" />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.instructionContainer}>
-                <Text style={styles.instructionText}>
-                  Point camera at waste item
-                </Text>
-              </View>
-
-              <View style={styles.bottomControls}>
-                <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
-                  <Ionicons name="images" size={28} color="#fff" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.captureButton}
-                  onPress={takePicture}
-                  disabled={isProcessing}
-                >
-                  <View style={styles.captureButtonInner} />
-                </TouchableOpacity>
-
-                <View style={styles.galleryButton} />
-              </View>
+          <CameraView style={styles.camera} facing={type} ref={cameraRef} />
+          <View style={styles.cameraOverlay}>
+            <View style={styles.topControls}>
+              <TouchableOpacity
+                style={styles.flipButton}
+                onPress={() => {
+                  setType(
+                    type === 'back'
+                      ? 'front'
+                      : 'back'
+                  );
+                }}
+              >
+                <Ionicons name="camera-reverse" size={32} color="#fff" />
+              </TouchableOpacity>
             </View>
-          </Camera>
+
+            <View style={styles.instructionContainer}>
+              <Text style={styles.instructionText}>
+                Point camera at waste item
+              </Text>
+            </View>
+
+            <View style={styles.bottomControls}>
+              <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
+                <Ionicons name="images" size={28} color="#fff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={takePicture}
+                disabled={isProcessing}
+              >
+                <View style={styles.captureButtonInner} />
+              </TouchableOpacity>
+
+              <View style={styles.galleryButton} />
+            </View>
+          </View>
         </>
       ) : (
         <View style={styles.previewContainer}>
           <Image source={{ uri: capturedImage }} style={styles.previewImage} />
-          
+
           {isProcessing ? (
             <View style={styles.processingOverlay}>
               <ActivityIndicator size="large" color="#4CAF50" />
