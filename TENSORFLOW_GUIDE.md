@@ -377,3 +377,63 @@ tf.tidy(() => {
 - TensorFlow.js Models: https://github.com/tensorflow/tfjs-models
 - Model Training Guide: https://www.tensorflow.org/js/guide/train_models
 - Performance Best Practices: https://www.tensorflow.org/js/guide/platform_environment
+
+## Appendix: Training with Teachable Machine
+
+Google's Teachable Machine is the easiest way to create a custom waste classification model without coding.
+
+### 1. Train the Model
+
+1. Go to [Teachable Machine](https://teachablemachine.withgoogle.com/train/image).
+2. Create a generic **Image Project**.
+3. **Define Classes**: Create a class for each dataset category (e.g., Plastic, Paper, Metal, Glass, Organic, Other).
+4. **Collect Data**:
+   - Upload existing datasets (e.g., from Kaggle).
+   - Or use your webcam to capture samples.
+   - Aim for at least 50-100 images per class for decent accuracy.
+5. **Train**: Click **Train Model**. Wait for it to finish.
+6. **Test**: Use the preview panel to test with new images or your webcam.
+
+### 2. Export the Model
+
+1. Click **Export Model**.
+2. Select **TensorFlow.js**.
+3. Choose **Download** (do not use "Upload to cloud" for this app as we want offline capability).
+4. Download the zip file. It will contain:
+   - `model.json`
+   - `metadata.json`
+   - `weights.bin` (possibly multiple)
+
+### 3. Integate into Eco-Sorter AI
+
+1. Create a folder `assets/model` in your project.
+2. Copy the downloaded files into this folder.
+3. You need to update `src/services/aiService.js` to load this bundled model instead of creating one from scratch.
+
+**Required Code Changes:**
+
+First, import the bundle loader:
+```javascript
+import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
+```
+
+Then, update `loadOrCreateModel()`:
+```javascript
+async function loadOrCreateModel() {
+  try {
+    // Load bundled model from assets
+    const modelJson = require('../../assets/model/model.json');
+    const modelWeights = require('../../assets/model/weights.bin');
+    
+    const model = await tf.loadLayersModel(bundleResourceIO(modelJson, modelWeights));
+    console.log('Loaded bundled Teachable Machine model');
+    return model;
+  } catch (error) {
+    console.error('Error loading bundled model:', error);
+    // Fallback to creating a new one
+    return createModel();
+  }
+}
+```
+
+**Note:** You must also update the `CATEGORIES` array in `aiService.js` to match exactly the class names you used in Teachable Machine, in the same order.
