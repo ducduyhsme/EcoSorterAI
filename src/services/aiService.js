@@ -214,11 +214,25 @@ export async function classifyImage(imageUri) {
     const randomConfidence1 = 0.4 + Math.random() * 0.3; // 0.4 to 0.7
     const randomConfidence2 = 0.3 + Math.random() * 0.3; // 0.3 to 0.6
 
+    // Sort to ensure highest confidence is first
+    let category1, category2, confidence1, confidence2;
+    if (randomConfidence1 > randomConfidence2) {
+      category1 = CATEGORIES[randomGroup1];
+      confidence1 = randomConfidence1;
+      category2 = CATEGORIES[randomGroup2];
+      confidence2 = randomConfidence2;
+    } else {
+      category1 = CATEGORIES[randomGroup2];
+      confidence1 = randomConfidence2;
+      category2 = CATEGORIES[randomGroup1];
+      confidence2 = randomConfidence1;
+    }
+
     return {
-      category: CATEGORIES[randomGroup1],
-      confidence: randomConfidence1,
-      category2: CATEGORIES[randomGroup2],
-      confidence2: randomConfidence2,
+      category: category1,
+      confidence: confidence1,
+      category2: category2,
+      confidence2: confidence2,
       allProbabilities: CATEGORIES.map(() => Math.random()),
     };
   }

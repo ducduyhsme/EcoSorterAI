@@ -60,6 +60,7 @@ export default function HistoryScreen() {
         </Text>
         <Text style={styles.itemConfidence}>
           Confidence: {(item.confidence * 100).toFixed(1)}%
+          {item.confidence2 ? ` / ${(item.confidence2 * 100).toFixed(1)}%` : ''}
         </Text>
         <Text style={styles.itemDate}>
           {new Date(item.timestamp).toLocaleString()}
