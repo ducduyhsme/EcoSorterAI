@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-react-native';
+import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import * as FileSystem from 'expo-file-system';
 import {
   TRAINING_EPOCHS,
@@ -20,11 +20,11 @@ export async function initializeModel() {
   try {
     // Wait for TensorFlow to be ready
     await tf.ready();
-    
+
     // Try to load a pre-trained model or create a simple model
     model = await loadOrCreateModel();
     isModelReady = true;
-    
+
     console.log('TensorFlow model initialized successfully');
     return true;
   } catch (error) {
@@ -41,22 +41,18 @@ export async function initializeModel() {
  */
 async function loadOrCreateModel() {
   try {
-    // Try to load saved model from device
-    const modelPath = `${FileSystem.documentDirectory}tfjs_model/model.json`;
-    const modelExists = await FileSystem.getInfoAsync(modelPath);
-    
-    if (modelExists.exists) {
-      // Load the saved model
-      const model = await tf.loadLayersModel(`file://${modelPath}`);
-      console.log('Loaded saved model');
-      return model;
-    }
+    // Load bundled model from assets
+    const modelJson = require('../../assets/model/model.json');
+    const modelWeights = require('../../assets/model/weights.bin');
+
+    const model = await tf.loadLayersModel(bundleResourceIO(modelJson, modelWeights));
+    console.log('Loaded bundled Teachable Machine model');
+    return model;
   } catch (error) {
-    console.log('No saved model found, creating new model');
+    console.error('Error loading bundled model:', error);
+    // Fallback to creating a new one
+    return createModel();
   }
-  
-  // Create a new model
-  return createModel();
 }
 
 /**
@@ -64,7 +60,7 @@ async function loadOrCreateModel() {
  */
 function createModel() {
   const model = tf.sequential();
-  
+
   // Input layer - expecting 224x224 RGB images
   model.add(tf.layers.conv2d({
     inputShape: [224, 224, 3],
@@ -72,47 +68,47 @@ function createModel() {
     filters: 32,
     activation: 'relu',
   }));
-  
+
   model.add(tf.layers.maxPooling2d({ poolSize: 2 }));
-  
+
   model.add(tf.layers.conv2d({
     kernelSize: 3,
     filters: 64,
     activation: 'relu',
   }));
-  
+
   model.add(tf.layers.maxPooling2d({ poolSize: 2 }));
-  
+
   model.add(tf.layers.conv2d({
     kernelSize: 3,
     filters: 128,
     activation: 'relu',
   }));
-  
+
   model.add(tf.layers.maxPooling2d({ poolSize: 2 }));
-  
+
   model.add(tf.layers.flatten());
-  
+
   model.add(tf.layers.dense({
     units: 128,
     activation: 'relu',
   }));
-  
+
   model.add(tf.layers.dropout({ rate: 0.5 }));
-  
+
   // Output layer - 6 categories
   model.add(tf.layers.dense({
     units: CATEGORIES.length,
     activation: 'softmax',
   }));
-  
+
   // Compile the model
   model.compile({
     optimizer: tf.train.adam(0.001),
     loss: 'categoricalCrossentropy',
     metrics: ['accuracy'],
   });
-  
+
   console.log('Created new CNN model');
   return model;
 }
@@ -122,17 +118,17 @@ function createModel() {
  */
 function createFallbackModel() {
   const model = tf.sequential();
-  
+
   model.add(tf.layers.flatten({ inputShape: [224, 224, 3] }));
   model.add(tf.layers.dense({ units: 128, activation: 'relu' }));
   model.add(tf.layers.dense({ units: CATEGORIES.length, activation: 'softmax' }));
-  
+
   model.compile({
     optimizer: 'adam',
     loss: 'categoricalCrossentropy',
     metrics: ['accuracy'],
   });
-  
+
   console.log('Created fallback model');
   return model;
 }
@@ -145,11 +141,11 @@ async function preprocessImage(imageUri) {
     // For production, implement proper image loading and preprocessing
     // This is a simplified version that creates a random tensor as a fallback
     console.warn('preprocessImage: Using fallback random tensor. Implement proper image preprocessing for production.');
-    
+
     // Create a normalized random tensor as fallback
     // In production, load actual image data here
     const normalized = tf.randomNormal([224, 224, 3]).div(255.0);
-    
+
     return normalized;
   } catch (error) {
     console.error('Error preprocessing image:', error);
@@ -165,34 +161,34 @@ export async function classifyImage(imageUri) {
   if (!isModelReady) {
     await initializeModel();
   }
-  
+
   try {
     // Preprocess the image
     const imageTensor = await preprocessImage(imageUri);
-    
+
     // Add batch dimension for prediction
     const batchedTensor = imageTensor.expandDims(0);
-    
+
     // Make prediction
     const predictions = await model.predict(batchedTensor);
     const probabilities = await predictions.data();
-    
+
     // Find the category with highest probability
     let maxProb = 0;
     let maxIndex = 0;
-    
+
     for (let i = 0; i < probabilities.length; i++) {
       if (probabilities[i] > maxProb) {
         maxProb = probabilities[i];
         maxIndex = i;
       }
     }
-    
+
     // Clean up tensors
     imageTensor.dispose();
     batchedTensor.dispose();
     predictions.dispose();
-    
+
     return {
       category: CATEGORIES[maxIndex],
       confidence: maxProb,
@@ -200,11 +196,11 @@ export async function classifyImage(imageUri) {
     };
   } catch (error) {
     console.error('Error classifying image:', error);
-    
+
     // Return a random classification as fallback
     const randomIndex = Math.floor(Math.random() * CATEGORIES.length);
     const randomConfidence = 0.3 + Math.random() * 0.4; // 0.3 to 0.7
-    
+
     return {
       category: CATEGORIES[randomIndex],
       confidence: randomConfidence,
@@ -220,20 +216,20 @@ export async function trainModel(trainingData) {
   if (!isModelReady) {
     await initializeModel();
   }
-  
+
   try {
     console.log('Starting model training...');
-    
+
     // Prepare training data
     const { images, labels } = trainingData;
-    
+
     // Convert images to tensors - await all promises
     const imagePromises = images.map(img => preprocessImage(img));
     const imageTensors = await Promise.all(imagePromises);
-    
+
     // Stack into a single tensor
     const imageTensorStack = tf.stack(imageTensors);
-    
+
     // Convert labels to one-hot encoding
     const labelTensors = tf.tensor2d(labels.map(label => {
       const oneHot = new Array(CATEGORIES.length).fill(0);
@@ -241,7 +237,7 @@ export async function trainModel(trainingData) {
       if (index >= 0) oneHot[index] = 1;
       return oneHot;
     }));
-    
+
     // Train the model
     const history = await model.fit(imageTensorStack, labelTensors, {
       epochs: TRAINING_EPOCHS,
@@ -253,15 +249,15 @@ export async function trainModel(trainingData) {
         },
       },
     });
-    
+
     // Save the trained model
     await saveModel();
-    
+
     // Clean up
     imageTensors.forEach(t => t.dispose());
     imageTensorStack.dispose();
     labelTensors.dispose();
-    
+
     console.log('Model training completed');
     return {
       success: true,
@@ -283,13 +279,13 @@ export async function trainModel(trainingData) {
 export async function saveModel() {
   try {
     const modelDir = `${FileSystem.documentDirectory}tfjs_model`;
-    
+
     // Ensure directory exists
     const dirInfo = await FileSystem.getInfoAsync(modelDir);
     if (!dirInfo.exists) {
       await FileSystem.makeDirectoryAsync(modelDir, { intermediates: true });
     }
-    
+
     // Save model
     await model.save(`file://${modelDir}`);
     console.log('Model saved successfully');
@@ -310,7 +306,7 @@ export function getModelInfo() {
       categories: CATEGORIES,
     };
   }
-  
+
   return {
     ready: isModelReady,
     categories: CATEGORIES,

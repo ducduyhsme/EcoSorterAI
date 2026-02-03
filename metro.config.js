@@ -6,6 +6,9 @@ const config = getDefaultConfig(__dirname);
 // Add resolver for react-native-fs shim
 // This is needed because @tensorflow/tfjs-react-native requires react-native-fs
 // but it's not compatible with Expo managed workflow
+// Add 'bin' to assetExts so that .bin files (like model weights) are bundled
+config.resolver.assetExts.push('bin');
+
 config.resolver.extraNodeModules = {
   ...config.resolver.extraNodeModules,
   'react-native-fs': path.resolve(__dirname, 'src/shims/react-native-fs.js'),
