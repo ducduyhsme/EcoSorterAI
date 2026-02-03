@@ -287,8 +287,10 @@ GET /training/stats
   "stats": {
     "totalSamples": 10000,
     "categoryCounts": {
-      "Organic": 5500,
-      "Inorganic": 4500
+      "Organic": 3000,
+      "Inorganic": 2500,
+      "Recyclable Waste": 2500,
+      "Non-recyclable Waste": 2000
     },
     "lastModelUpdate": "string"
   }
