@@ -123,26 +123,30 @@ const history = await model.fit(xs, ys, {
 });
 ```
 
-### Adding Categories
+### Modifying Categories
 
-To add more waste categories:
+The current model uses a binary classification system with two categories: Organic and Inorganic. If you need to extend this system to more categories in the future:
 
 1. Update the `CATEGORIES` array in `src/services/aiService.js`:
 ```javascript
 const CATEGORIES = [
   'Organic', 
   'Inorganic',
-  'YourNewCategory',  // Add new categories here
+  // Add additional categories as needed, e.g.:
+  // 'Hazardous',
+  // 'Electronic',
 ];
 ```
 
-2. Update the output layer in `createModel()`:
+2. The output layer in `createModel()` automatically adjusts based on the number of categories:
 ```javascript
 model.add(tf.layers.dense({
   units: CATEGORIES.length,  // Automatically adjusts
   activation: 'softmax',
 }));
 ```
+
+**Note:** Adding more categories will require collecting new training data for each additional category and may require retraining the model from scratch.
 
 ## Training Best Practices
 
