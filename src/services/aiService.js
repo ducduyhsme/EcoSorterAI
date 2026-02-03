@@ -8,7 +8,7 @@ import {
 } from '../config/constants';
 
 // Waste categories
-const CATEGORIES = ['Organic', 'Inorganic', 'Recyclable Waste', 'Non-recyclable Waste'];
+const CATEGORIES = ['Plastic', 'Paper', 'Metal', 'Glass', 'Organic', 'Other'];
 
 let model = null;
 let isModelReady = false;

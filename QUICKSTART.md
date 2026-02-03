@@ -78,7 +78,7 @@ npm run android
 - **Instant results**: Get classification in seconds
 
 ### 🤖 AI Classification
-- **4 Categories**: Organic, Inorganic, Recyclable Waste, and Non-recyclable Waste
+- **6 Categories**: Plastic, Paper, Metal, Glass, Organic, Other
 - **Confidence scores**: See how sure the AI is
 - **Auto-improvement**: High confidence results train the model
 
@@ -116,7 +116,7 @@ npm run android
 **Change Categories**:
 Edit `src/services/aiService.js`:
 ```javascript
-const CATEGORIES = ['Organic', 'Inorganic', 'Recyclable Waste', 'Non-recyclable Waste'];
+const CATEGORIES = ['Plastic', 'Paper', 'Metal', 'Glass', 'Organic', 'Other'];
 ```
 
 **Adjust Thresholds**:
