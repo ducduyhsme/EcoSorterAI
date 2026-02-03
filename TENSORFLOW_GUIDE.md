@@ -4,14 +4,12 @@ This guide explains how the TensorFlow model training works in the Eco-Sorter AI
 
 ## Overview
 
-The app uses TensorFlow.js for React Native to perform on-device machine learning. The model is a Convolutional Neural Network (CNN) designed to classify waste into 6 categories:
+The app uses TensorFlow.js for React Native to perform on-device machine learning. The model is a Convolutional Neural Network (CNN) designed to classify waste into 4 categories:
 
-1. Plastic
-2. Paper
-3. Metal
-4. Glass
-5. Organic
-6. Other
+1. Organic
+2. Inorganic
+3. Recyclable Waste
+4. Non-recyclable Waste
 
 ## Model Architecture
 
@@ -38,7 +36,7 @@ Dense (128 units, ReLU)
 ↓
 Dropout (0.5)
 ↓
-Dense (6 units, Softmax)
+Dense (4 units, Softmax)
 ```
 
 ### Compilation
@@ -127,31 +125,32 @@ const history = await model.fit(xs, ys, {
 });
 ```
 
-### Adding Categories
+### Modifying Categories
 
-To add more waste categories:
+The current model uses a multi-class classification system with four categories: Organic, Inorganic, Recyclable Waste, and Non-recyclable Waste. If you need to extend this system to more categories in the future:
 
 1. Update the `CATEGORIES` array in `src/services/aiService.js`:
 ```javascript
 const CATEGORIES = [
-  'Plastic', 
-  'Paper', 
-  'Metal', 
-  'Glass', 
   'Organic', 
-  'Other',
-  'Electronic',  // New category
-  'Textile',     // New category
+  'Inorganic',
+  'Recyclable Waste',
+  'Non-recyclable Waste',
+  // Add additional categories as needed, e.g.:
+  // 'Hazardous',
+  // 'Electronic',
 ];
 ```
 
-2. Update the output layer in `createModel()`:
+2. The output layer in `createModel()` automatically adjusts based on the number of categories:
 ```javascript
 model.add(tf.layers.dense({
   units: CATEGORIES.length,  // Automatically adjusts
   activation: 'softmax',
 }));
 ```
+
+**Note:** Adding more categories will require collecting new training data for each additional category and may require retraining the model from scratch.
 
 ## Training Best Practices
 
@@ -386,7 +385,7 @@ Google's Teachable Machine is the easiest way to create a custom waste classific
 
 1. Go to [Teachable Machine](https://teachablemachine.withgoogle.com/train/image).
 2. Create a generic **Image Project**.
-3. **Define Classes**: Create a class for each dataset category (e.g., Plastic, Paper, Metal, Glass, Organic, Other).
+3. **Define Classes**: Create a class for each dataset category (e.g., Organic, Inorganic, Recyclable Waste, Non-recyclable Waste).
 4. **Collect Data**:
    - Upload existing datasets (e.g., from Kaggle).
    - Or use your webcam to capture samples.
