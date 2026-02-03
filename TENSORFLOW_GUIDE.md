@@ -127,7 +127,7 @@ const history = await model.fit(xs, ys, {
 
 ### Modifying Categories
 
-The current model uses a binary classification system with two categories: Organic and Inorganic. If you need to extend this system to more categories in the future:
+The current model uses a multi-class classification system with four categories: Organic, Inorganic, Recyclable Waste, and Non-recyclable Waste. If you need to extend this system to more categories in the future:
 
 1. Update the `CATEGORIES` array in `src/services/aiService.js`:
 ```javascript
