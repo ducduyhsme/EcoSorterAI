@@ -17,7 +17,7 @@ export default function HistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('All');
 
-  const categories = ['All', 'Organic', 'Inorganic', 'Recyclable Waste', 'Non-recyclable Waste'];
+  const categories = ['All', 'Plastic', 'Paper', 'Metal', 'Glass', 'Organic', 'Other'];
 
   useEffect(() => {
     loadHistory();
