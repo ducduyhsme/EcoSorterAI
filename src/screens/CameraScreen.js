@@ -179,7 +179,9 @@ export default function CameraScreen() {
                 <Text style={styles.resultTitle}>Classification Result</Text>
                 <View style={styles.resultItem}>
                   <Text style={styles.resultLabel}>Categories:</Text>
-                  <Text style={styles.resultValue}>{result.category}, {result.category2}</Text>
+                  <Text style={styles.resultValue}>
+                    {result.category}{result.category2 ? `, ${result.category2}` : ''}
+                  </Text>
                 </View>
                 <View style={styles.resultItem}>
                   <Text style={styles.resultLabel}>Primary Confidence:</Text>
@@ -190,12 +192,14 @@ export default function CameraScreen() {
                     {(result.confidence * 100).toFixed(1)}%
                   </Text>
                 </View>
-                <View style={styles.resultItem}>
-                  <Text style={styles.resultLabel}>Secondary Confidence:</Text>
-                  <Text style={styles.resultValue}>
-                    {(result.confidence2 * 100).toFixed(1)}%
-                  </Text>
-                </View>
+                {result.category2 && result.confidence2 && (
+                  <View style={styles.resultItem}>
+                    <Text style={styles.resultLabel}>Secondary Confidence:</Text>
+                    <Text style={styles.resultValue}>
+                      {(result.confidence2 * 100).toFixed(1)}%
+                    </Text>
+                  </View>
+                )}
                 {result.confidence < CONFIDENCE_THRESHOLD_LOW && (
                   <Text style={styles.uploadInfo}>
                     ℹ️ Sent to server for better classification
