@@ -173,15 +173,24 @@ export async function classifyImage(imageUri) {
     const predictions = await model.predict(batchedTensor);
     const probabilities = await predictions.data();
 
-    // Find the category with highest probability
-    let maxProb = 0;
-    let maxIndex = 0;
+    // Get top 2 categories from different groups
+    // Group 1: Organic (0), Inorganic (1)
+    // Group 2: Recyclable Waste (2), Non-recyclable Waste (3)
+    const group1Max = probabilities[0] > probabilities[1] ? 0 : 1;
+    const group2Max = probabilities[2] > probabilities[3] ? 2 : 3;
 
-    for (let i = 0; i < probabilities.length; i++) {
-      if (probabilities[i] > maxProb) {
-        maxProb = probabilities[i];
-        maxIndex = i;
-      }
+    // Sort to ensure highest confidence is first
+    let category1, category2, confidence1, confidence2;
+    if (probabilities[group1Max] > probabilities[group2Max]) {
+      category1 = CATEGORIES[group1Max];
+      confidence1 = probabilities[group1Max];
+      category2 = CATEGORIES[group2Max];
+      confidence2 = probabilities[group2Max];
+    } else {
+      category1 = CATEGORIES[group2Max];
+      confidence1 = probabilities[group2Max];
+      category2 = CATEGORIES[group1Max];
+      confidence2 = probabilities[group1Max];
     }
 
     // Clean up tensors
@@ -190,20 +199,26 @@ export async function classifyImage(imageUri) {
     predictions.dispose();
 
     return {
-      category: CATEGORIES[maxIndex],
-      confidence: maxProb,
+      category: category1,
+      confidence: confidence1,
+      category2: category2,
+      confidence2: confidence2,
       allProbabilities: Array.from(probabilities),
     };
   } catch (error) {
     console.error('Error classifying image:', error);
 
     // Return a random classification as fallback
-    const randomIndex = Math.floor(Math.random() * CATEGORIES.length);
-    const randomConfidence = 0.3 + Math.random() * 0.4; // 0.3 to 0.7
+    const randomGroup1 = Math.random() > 0.5 ? 0 : 1; // Organic or Inorganic
+    const randomGroup2 = Math.random() > 0.5 ? 2 : 3; // Recyclable or Non-recyclable
+    const randomConfidence1 = 0.4 + Math.random() * 0.3; // 0.4 to 0.7
+    const randomConfidence2 = 0.3 + Math.random() * 0.3; // 0.3 to 0.6
 
     return {
-      category: CATEGORIES[randomIndex],
-      confidence: randomConfidence,
+      category: CATEGORIES[randomGroup1],
+      confidence: randomConfidence1,
+      category2: CATEGORIES[randomGroup2],
+      confidence2: randomConfidence2,
       allProbabilities: CATEGORIES.map(() => Math.random()),
     };
   }
