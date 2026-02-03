@@ -4,14 +4,10 @@ This guide explains how the TensorFlow model training works in the Eco-Sorter AI
 
 ## Overview
 
-The app uses TensorFlow.js for React Native to perform on-device machine learning. The model is a Convolutional Neural Network (CNN) designed to classify waste into 6 categories:
+The app uses TensorFlow.js for React Native to perform on-device machine learning. The model is a Convolutional Neural Network (CNN) designed to classify waste into 2 categories:
 
-1. Plastic
-2. Paper
-3. Metal
-4. Glass
-5. Organic
-6. Other
+1. Organic
+2. Inorganic
 
 ## Model Architecture
 
@@ -38,7 +34,7 @@ Dense (128 units, ReLU)
 ↓
 Dropout (0.5)
 ↓
-Dense (6 units, Softmax)
+Dense (2 units, Softmax)
 ```
 
 ### Compilation
@@ -134,14 +130,9 @@ To add more waste categories:
 1. Update the `CATEGORIES` array in `src/services/aiService.js`:
 ```javascript
 const CATEGORIES = [
-  'Plastic', 
-  'Paper', 
-  'Metal', 
-  'Glass', 
   'Organic', 
-  'Other',
-  'Electronic',  // New category
-  'Textile',     // New category
+  'Inorganic',
+  'YourNewCategory',  // Add new categories here
 ];
 ```
 
@@ -386,7 +377,7 @@ Google's Teachable Machine is the easiest way to create a custom waste classific
 
 1. Go to [Teachable Machine](https://teachablemachine.withgoogle.com/train/image).
 2. Create a generic **Image Project**.
-3. **Define Classes**: Create a class for each dataset category (e.g., Plastic, Paper, Metal, Glass, Organic, Other).
+3. **Define Classes**: Create a class for each dataset category (e.g., Organic, Inorganic).
 4. **Collect Data**:
    - Upload existing datasets (e.g., from Kaggle).
    - Or use your webcam to capture samples.

@@ -78,7 +78,7 @@ npm run android
 - **Instant results**: Get classification in seconds
 
 ### 🤖 AI Classification
-- **6 Categories**: Plastic, Paper, Metal, Glass, Organic, Other
+- **2 Categories**: Organic and Inorganic
 - **Confidence scores**: See how sure the AI is
 - **Auto-improvement**: High confidence results train the model
 
@@ -116,7 +116,7 @@ npm run android
 **Change Categories**:
 Edit `src/services/aiService.js`:
 ```javascript
-const CATEGORIES = ['Plastic', 'Paper', 'Metal', 'Glass', 'Organic', 'Other'];
+const CATEGORIES = ['Organic', 'Inorganic'];
 ```
 
 **Adjust Thresholds**:

@@ -17,7 +17,7 @@ export default function HistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('All');
 
-  const categories = ['All', 'Plastic', 'Paper', 'Metal', 'Glass', 'Organic', 'Other'];
+  const categories = ['All', 'Organic', 'Inorganic'];
 
   useEffect(() => {
     loadHistory();
