@@ -55,9 +55,12 @@ export default function HistoryScreen() {
     <View style={styles.itemContainer}>
       <Image source={{ uri: item.imageUri }} style={styles.thumbnail} />
       <View style={styles.itemInfo}>
-        <Text style={styles.itemCategory}>{item.category}</Text>
+        <Text style={styles.itemCategory}>
+          {item.category}{item.category2 ? `, ${item.category2}` : ''}
+        </Text>
         <Text style={styles.itemConfidence}>
           Confidence: {(item.confidence * 100).toFixed(1)}%
+          {item.confidence2 ? ` / ${(item.confidence2 * 100).toFixed(1)}%` : ''}
         </Text>
         <Text style={styles.itemDate}>
           {new Date(item.timestamp).toLocaleString()}
