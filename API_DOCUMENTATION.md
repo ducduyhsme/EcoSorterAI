@@ -287,12 +287,10 @@ GET /training/stats
   "stats": {
     "totalSamples": 10000,
     "categoryCounts": {
-      "Plastic": 2500,
-      "Paper": 2000,
-      "Metal": 1500,
-      "Glass": 1800,
-      "Organic": 1500,
-      "Other": 700
+      "Organic": 3000,
+      "Inorganic": 2500,
+      "Recyclable Waste": 2500,
+      "Non-recyclable Waste": 2000
     },
     "lastModelUpdate": "string"
   }
@@ -517,7 +515,7 @@ Example cURL request:
 curl -X POST https://your-server.com/api/classify/upload \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -F "image=@/path/to/image.jpg" \
-  -F "category=Plastic" \
+  -F "category=Organic" \
   -F "confidence=0.65" \
   -F "timestamp=2024-01-15T12:00:00Z"
 ```
