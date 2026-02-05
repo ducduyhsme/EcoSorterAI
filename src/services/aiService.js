@@ -8,7 +8,7 @@ import {
 } from '../config/constants';
 
 // Waste categories
-const CATEGORIES = ['Organic', 'Inorganic', 'Recyclable Waste', 'Non-recyclable Waste'];
+const CATEGORIES = ['Organic', 'Inorganic'];
 
 let model = null;
 let isModelReady = false;
@@ -96,7 +96,7 @@ function createModel() {
 
   model.add(tf.layers.dropout({ rate: 0.5 }));
 
-  // Output layer - 6 categories
+  // Output layer - categories
   model.add(tf.layers.dense({
     units: CATEGORIES.length,
     activation: 'softmax',
@@ -173,25 +173,17 @@ export async function classifyImage(imageUri) {
     const predictions = await model.predict(batchedTensor);
     const probabilities = await predictions.data();
 
-    // Get top 2 categories from different groups
-    // Group 1: Organic (0), Inorganic (1)
-    // Group 2: Recyclable Waste (2), Non-recyclable Waste (3)
-    const group1Max = probabilities[0] > probabilities[1] ? 0 : 1;
-    const group2Max = probabilities[2] > probabilities[3] ? 2 : 3;
-
-    // Sort to ensure highest confidence is first
-    let category1, category2, confidence1, confidence2;
-    if (probabilities[group1Max] > probabilities[group2Max]) {
-      category1 = CATEGORIES[group1Max];
-      confidence1 = probabilities[group1Max];
-      category2 = CATEGORIES[group2Max];
-      confidence2 = probabilities[group2Max];
-    } else {
-      category1 = CATEGORIES[group2Max];
-      confidence1 = probabilities[group2Max];
-      category2 = CATEGORIES[group1Max];
-      confidence2 = probabilities[group1Max];
-    }
+    const availableCategories = Math.min(probabilities.length, CATEGORIES.length);
+    const probabilitiesArray = Array.from(probabilities).slice(0, availableCategories);
+    const rankedIndices = probabilitiesArray
+      .map((value, index) => ({ value, index }))
+      .sort((a, b) => b.value - a.value);
+    const topMatch = rankedIndices[0];
+    const secondMatch = rankedIndices[1];
+    const category1 = topMatch ? CATEGORIES[topMatch.index] : null;
+    const confidence1 = topMatch ? topMatch.value : 0;
+    const category2 = secondMatch ? CATEGORIES[secondMatch.index] : null;
+    const confidence2 = secondMatch ? secondMatch.value : null;
 
     // Clean up tensors
     imageTensor.dispose();
@@ -203,37 +195,29 @@ export async function classifyImage(imageUri) {
       confidence: confidence1,
       category2: category2,
       confidence2: confidence2,
-      allProbabilities: Array.from(probabilities),
+      allProbabilities: probabilitiesArray,
     };
   } catch (error) {
     console.error('Error classifying image:', error);
 
     // Return a random classification as fallback
-    const randomGroup1 = Math.random() > 0.5 ? 0 : 1; // Organic or Inorganic
-    const randomGroup2 = Math.random() > 0.5 ? 2 : 3; // Recyclable or Non-recyclable
-    const randomConfidence1 = 0.4 + Math.random() * 0.3; // 0.4 to 0.7
-    const randomConfidence2 = 0.3 + Math.random() * 0.3; // 0.3 to 0.6
-
-    // Sort to ensure highest confidence is first
-    let category1, category2, confidence1, confidence2;
-    if (randomConfidence1 > randomConfidence2) {
-      category1 = CATEGORIES[randomGroup1];
-      confidence1 = randomConfidence1;
-      category2 = CATEGORIES[randomGroup2];
-      confidence2 = randomConfidence2;
-    } else {
-      category1 = CATEGORIES[randomGroup2];
-      confidence1 = randomConfidence2;
-      category2 = CATEGORIES[randomGroup1];
-      confidence2 = randomConfidence1;
-    }
+    const randomProbabilities = CATEGORIES.map(() => Math.random());
+    const rankedIndices = randomProbabilities
+      .map((value, index) => ({ value, index }))
+      .sort((a, b) => b.value - a.value);
+    const topMatch = rankedIndices[0];
+    const secondMatch = rankedIndices[1];
+    const category1 = topMatch ? CATEGORIES[topMatch.index] : null;
+    const confidence1 = topMatch ? topMatch.value : 0;
+    const category2 = secondMatch ? CATEGORIES[secondMatch.index] : null;
+    const confidence2 = secondMatch ? secondMatch.value : null;
 
     return {
       category: category1,
       confidence: confidence1,
       category2: category2,
       confidence2: confidence2,
-      allProbabilities: CATEGORIES.map(() => Math.random()),
+      allProbabilities: randomProbabilities,
     };
   }
 }
