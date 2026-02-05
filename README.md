@@ -35,10 +35,6 @@ Eco-Sorter AI is a mobile application for Android and iOS that uses artificial i
 
 - **Framework**: React Native with Expo
 - **AI/ML**: TensorFlow.js for React Native
-- **Storage**: AsyncStorage for local data, cloud storage integration ready
-- **Camera**: Expo Camera and Image Picker
-- **Navigation**: React Navigation
-- **UI**: React Native components with custom styling
 
 ## Prerequisites
 
