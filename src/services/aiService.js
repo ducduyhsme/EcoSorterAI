@@ -183,7 +183,7 @@ export async function classifyImage(imageUri) {
     const category1 = topMatch ? CATEGORIES[topMatch.index] : null;
     const confidence1 = topMatch ? topMatch.value : 0;
     const category2 = secondMatch ? CATEGORIES[secondMatch.index] : null;
-    const confidence2 = secondMatch ? secondMatch.value : null;
+    const confidence2 = secondMatch ? secondMatch.value : 0;
 
     // Clean up tensors
     imageTensor.dispose();
@@ -210,7 +210,7 @@ export async function classifyImage(imageUri) {
     const category1 = topMatch ? CATEGORIES[topMatch.index] : null;
     const confidence1 = topMatch ? topMatch.value : 0;
     const category2 = secondMatch ? CATEGORIES[secondMatch.index] : null;
-    const confidence2 = secondMatch ? secondMatch.value : null;
+    const confidence2 = secondMatch ? secondMatch.value : 0;
 
     return {
       category: category1,
