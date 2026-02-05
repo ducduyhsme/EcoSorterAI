@@ -7,7 +7,7 @@ Eco-Sorter AI is a mobile application for Android and iOS that uses artificial i
 ✅ **Image-Based Waste Classification**
 - Use your device camera to capture images of waste items
 - Local AI model powered by TensorFlow for real-time classification
-- Identifies waste categories: Organic, Inorganic, Recyclable Waste, and Non-recyclable Waste
+- Identifies waste categories: Organic and Inorganic
 
 ✅ **Accurate Self-Identification**
 - Records the software's prediction accuracy
@@ -125,7 +125,7 @@ The app uses a Convolutional Neural Network (CNN) built with TensorFlow.js:
   - Flatten layer
   - Dense layer (128 units)
   - Dropout (0.5)
-  - Output layer (4 categories with softmax)
+  - Output layer (2 categories with softmax)
 - **Training**: Adam optimizer, categorical crossentropy loss
 - **Features**: On-device training, model persistence, automatic retraining
 
