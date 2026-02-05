@@ -179,11 +179,8 @@ export async function classifyImage(imageUri) {
       .map((value, index) => ({ value, index }))
       .sort((a, b) => b.value - a.value);
     const topMatch = rankedIndices[0];
-    const secondMatch = rankedIndices[1];
     const category1 = topMatch ? CATEGORIES[topMatch.index] : null;
     const confidence1 = topMatch ? topMatch.value : 0;
-    const category2 = secondMatch ? CATEGORIES[secondMatch.index] : null;
-    const confidence2 = secondMatch ? secondMatch.value : 0;
 
     // Clean up tensors
     imageTensor.dispose();
@@ -193,8 +190,6 @@ export async function classifyImage(imageUri) {
     return {
       category: category1,
       confidence: confidence1,
-      category2: category2,
-      confidence2: confidence2,
       allProbabilities: probabilitiesArray,
     };
   } catch (error) {
@@ -206,17 +201,12 @@ export async function classifyImage(imageUri) {
       .map((value, index) => ({ value, index }))
       .sort((a, b) => b.value - a.value);
     const topMatch = rankedIndices[0];
-    const secondMatch = rankedIndices[1];
     const category1 = topMatch ? CATEGORIES[topMatch.index] : null;
     const confidence1 = topMatch ? topMatch.value : 0;
-    const category2 = secondMatch ? CATEGORIES[secondMatch.index] : null;
-    const confidence2 = secondMatch ? secondMatch.value : 0;
 
     return {
       category: category1,
       confidence: confidence1,
-      category2: category2,
-      confidence2: confidence2,
       allProbabilities: randomProbabilities,
     };
   }
