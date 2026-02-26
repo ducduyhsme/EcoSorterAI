@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Image,
   Modal,
+  Dimensions,
 } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
@@ -15,6 +16,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { classifyImage } from '../services/aiService';
 import { saveClassification, uploadToServer } from '../services/storageService';
 import { CONFIDENCE_THRESHOLD_LOW } from '../config/constants';
+
+// Calculate the camera preview height based on screen width and 3:4 aspect ratio
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CAMERA_HEIGHT = (SCREEN_WIDTH / 3) * 4;
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -124,44 +129,47 @@ export default function CameraScreen() {
     <View style={styles.container}>
       {!capturedImage ? (
         <>
-          <CameraView style={styles.camera} facing={type} ref={cameraRef} />
-          <View style={styles.cameraOverlay}>
-            <View style={styles.topControls}>
-              <TouchableOpacity
-                style={styles.flipButton}
-                onPress={() => {
-                  setType(
-                    type === 'back'
-                      ? 'front'
-                      : 'back'
-                  );
-                }}
-              >
-                <Ionicons name="camera-reverse" size={32} color="#fff" />
-              </TouchableOpacity>
+          {/* Camera wrapper: fixed 3:4 aspect ratio container */}
+          <View style={styles.cameraWrapper}>
+            {/* Camera preview fills the 3:4 container */}
+            <CameraView style={styles.camera} facing={type} ref={cameraRef} />
+
+            {/* Overlay sits ON TOP of camera (absolute positioned) */}
+            <View style={styles.cameraOverlay}>
+              {/* Instruction text centered on the camera preview */}
+              <View style={styles.instructionContainer}>
+                <Text style={styles.instructionText}>
+                  Point camera at waste item
+                </Text>
+              </View>
             </View>
+          </View>
 
-            <View style={styles.instructionContainer}>
-              <Text style={styles.instructionText}>
-                Point camera at waste item
-              </Text>
-            </View>
+          {/* Bottom controls: gallery, shutter, and flip button on the same row */}
+          <View style={styles.bottomControls}>
+            {/* Gallery / pick image button (left) */}
+            <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
+              <Ionicons name="images" size={28} color="#fff" />
+            </TouchableOpacity>
 
-            <View style={styles.bottomControls}>
-              <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
-                <Ionicons name="images" size={28} color="#fff" />
-              </TouchableOpacity>
+            {/* Shutter / capture button (center) */}
+            <TouchableOpacity
+              style={styles.captureButton}
+              onPress={takePicture}
+              disabled={isProcessing}
+            >
+              <View style={styles.captureButtonInner} />
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.captureButton}
-                onPress={takePicture}
-                disabled={isProcessing}
-              >
-                <View style={styles.captureButtonInner} />
-              </TouchableOpacity>
-
-              <View style={styles.galleryButton} />
-            </View>
+            {/* Camera flip button (right) — now same row as shutter */}
+            <TouchableOpacity
+              style={styles.flipButton}
+              onPress={() => {
+                setType(type === 'back' ? 'front' : 'back');
+              }}
+            >
+              <Ionicons name="camera-reverse" size={28} color="#fff" />
+            </TouchableOpacity>
           </View>
         </>
       ) : (
@@ -234,25 +242,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 20,
   },
+  /* 3:4 aspect ratio wrapper for the camera */
+  cameraWrapper: {
+    width: SCREEN_WIDTH,
+    height: CAMERA_HEIGHT,
+    overflow: 'hidden',
+  },
+  /* Camera fills the entire 3:4 wrapper */
   camera: {
     flex: 1,
   },
+  /* Overlay positioned absolutely on top of camera preview */
   cameraOverlay: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    justifyContent: 'space-between',
-  },
-  topControls: {
-    flexDirection: 'row',
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'flex-end',
-    padding: 20,
-    paddingTop: 60,
   },
-  flipButton: {
-    padding: 10,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 30,
-  },
+  /* Instruction text shown at the bottom of the camera preview */
   instructionContainer: {
     alignItems: 'center',
     padding: 20,
@@ -266,19 +271,22 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
   },
+  /* Bottom controls row: gallery (left), shutter (center), flip (right) */
   bottomControls: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingBottom: 40,
     paddingHorizontal: 20,
   },
+  /* Gallery button (left side) */
   galleryButton: {
     width: 50,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  /* Shutter button (center) */
   captureButton: {
     width: 70,
     height: 70,
@@ -294,6 +302,15 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     backgroundColor: '#4CAF50',
+  },
+  /* Camera flip button (right side) — now level with shutter */
+  flipButton: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 25,
   },
   previewContainer: {
     flex: 1,
