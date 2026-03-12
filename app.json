@@ -34,7 +34,9 @@
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -47,6 +49,11 @@
           "cameraPermission": "Allow Eco-Sorter AI to access your camera to capture images of waste."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "82017951-16d2-4695-a95e-888c8005cb18"
+      }
+    }
   }
 }
