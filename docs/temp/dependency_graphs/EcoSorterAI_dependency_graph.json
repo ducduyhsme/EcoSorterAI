@@ -386,8 +386,8 @@
     "relative_path": "src\\screens\\CameraScreen.js",
     "depends_on": [
       "src.services.storageService.saveClassification",
-      "src.services.storageService.uploadToServer",
-      "src.services.aiService.classifyImage"
+      "src.services.aiService.classifyImage",
+      "src.services.storageService.uploadToServer"
     ],
     "source_code": "processImage = async (imageUri) => {\n    try {\n      // Classify the image using local AI\n      const classification = await classifyImage(imageUri);\n      setResult(classification);\n\n      // Save classification to local storage\n      await saveClassification({\n        imageUri,\n        ...classification,\n        timestamp: new Date().toISOString(),\n      });\n\n      // If confidence is low, upload to server for better classification\n      if (classification.confidence < CONFIDENCE_THRESHOLD_LOW) {\n        await uploadToServer(imageUri, classification);\n      }\n    } catch (error) {\n      console.error('Error processing image:', error);\n      Alert.alert('Error', 'Failed to classify image');\n    }\n  }",
     "start_line": 80,
@@ -794,8 +794,8 @@
     "file_path": "C:\\Users\\Duy\\Documents\\GitHub\\EcoSorterAI\\src\\services\\aiService.js",
     "relative_path": "src\\services\\aiService.js",
     "depends_on": [
-      "src.services.aiService.createFallbackModel",
-      "src.services.aiService.loadOrCreateModel"
+      "src.services.aiService.loadOrCreateModel",
+      "src.services.aiService.createFallbackModel"
     ],
     "source_code": "async function initializeModel() {\n  try {\n    // Wait for TensorFlow to be ready\n    await tf.ready();\n\n    // Try to load a pre-trained model or create a simple model\n    model = await loadOrCreateModel();\n    isModelReady = true;\n\n    console.log('TensorFlow model initialized successfully');\n    return true;\n  } catch (error) {\n    console.error('Error initializing model:', error);\n    // Create a fallback model\n    model = createFallbackModel();\n    isModelReady = true;\n    return false;\n  }\n}",
     "start_line": 19,
@@ -921,8 +921,8 @@
     "relative_path": "src\\services\\aiService.js",
     "depends_on": [
       "src.services.aiService.preprocessImage",
-      "src.services.aiService.initializeModel",
-      "src.services.aiService.saveModel"
+      "src.services.aiService.saveModel",
+      "src.services.aiService.initializeModel"
     ],
     "source_code": "async function trainModel(trainingData) {\n  if (!isModelReady) {\n    await initializeModel();\n  }\n\n  try {\n    console.log('Starting model training...');\n\n    // Prepare training data\n    const { images, labels } = trainingData;\n\n    // Convert images to tensors - await all promises\n    const imagePromises = images.map(img => preprocessImage(img));\n    const imageTensors = await Promise.all(imagePromises);\n\n    // Stack into a single tensor\n    const imageTensorStack = tf.stack(imageTensors);\n\n    // Convert labels to one-hot encoding\n    const labelTensors = tf.tensor2d(labels.map(label => {\n      const oneHot = new Array(CATEGORIES.length).fill(0);\n      const index = CATEGORIES.indexOf(label);\n      if (index >= 0) oneHot[index] = 1;\n      return oneHot;\n    }));\n\n    // Train the model\n    const history = await model.fit(imageTensorStack, labelTensors, {\n      epochs: TRAINING_EPOCHS,\n      batchSize: TRAINING_BATCH_SIZE,\n      validationSplit: TRAINING_VALIDATION_SPLIT,\n      callbacks: {\n        onEpochEnd: (epoch, logs) => {\n          console.log(`Epoch ${epoch + 1}: loss = ${logs.loss.toFixed(4)}, accuracy = ${logs.acc.toFixed(4)}`);\n        },\n      },\n    });\n\n    // Save the trained model\n    await saveModel();\n\n    // Clean up\n    imageTensors.forEach(t => t.dispose());\n    imageTensorStack.dispose();\n    labelTensors.dispose();\n\n    console.log('Model training completed');\n    return {\n      success: true,\n      finalLoss: history.history.loss[history.history.loss.length - 1],\n      finalAccuracy: history.history.acc[history.history.acc.length - 1],\n    };\n  } catch (error) {\n    console.error('Error training model:', error);\n    return {\n      success: false,\n      error: error.message,\n    };\n  }\n}",
     "start_line": 218,
@@ -983,8 +983,8 @@
     "file_path": "C:\\Users\\Duy\\Documents\\GitHub\\EcoSorterAI\\src\\services\\rankingService.js",
     "relative_path": "src\\services\\rankingService.js",
     "depends_on": [
-      "src.services.rankingService.updateUserRanking",
       "src.services.rankingService.calculatePoints",
+      "src.services.rankingService.updateUserRanking",
       "src.services.storageService.getClassificationHistory"
     ],
     "source_code": "async function getUserStats() {\n  try {\n    const history = await getClassificationHistory();\n    const user = await AsyncStorage.getItem('user');\n    \n    if (!user) {\n      return {\n        totalScans: 0,\n        accurateScans: 0,\n        points: 0,\n      };\n    }\n    \n    const userData = JSON.parse(user);\n    \n    // Calculate stats\n    const totalScans = history.length;\n    const accurateScans = history.filter(item => item.confidence >= CONFIDENCE_THRESHOLD_MEDIUM).length;\n    const points = calculatePoints(history);\n    \n    // Update user stats in rankings\n    await updateUserRanking(userData.username, {\n      totalScans,\n      accurateScans,\n      points,\n    });\n    \n    return {\n      totalScans,\n      accurateScans,\n      points,\n    };\n  } catch (error) {\n    console.error('Error getting user stats:', error);\n    return {\n      totalScans: 0,\n      accurateScans: 0,\n      points: 0,\n    };\n  }\n}",
@@ -1131,8 +1131,8 @@
     "file_path": "C:\\Users\\Duy\\Documents\\GitHub\\EcoSorterAI\\src\\services\\storageService.js",
     "relative_path": "src\\services\\storageService.js",
     "depends_on": [
-      "src.services.storageService.addToTrainingData",
-      "src.services.storageService.getClassificationHistory"
+      "src.services.storageService.getClassificationHistory",
+      "src.services.storageService.addToTrainingData"
     ],
     "source_code": "async function saveClassification(classification) {\n  try {\n    // Get existing history\n    const history = await getClassificationHistory();\n    \n    // Add new classification\n    history.unshift(classification);\n    \n    // Keep only last MAX_HISTORY_ITEMS\n    const trimmedHistory = history.slice(0, MAX_HISTORY_ITEMS);\n    \n    // Save back to storage\n    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(trimmedHistory));\n    \n    // If high confidence, add to training data\n    if (classification.confidence >= CONFIDENCE_THRESHOLD_HIGH) {\n      await addToTrainingData(classification);\n    }\n    \n    return true;\n  } catch (error) {\n    console.error('Error saving classification:', error);\n    return false;\n  }\n}",
     "start_line": 16,
@@ -1320,8 +1320,8 @@
     "file_path": "C:\\Users\\Duy\\Documents\\GitHub\\EcoSorterAI\\src\\services\\trainingService.js",
     "relative_path": "src\\services\\trainingService.js",
     "depends_on": [
-      "src.services.aiService.trainModel",
-      "src.services.storageService.getTrainingData"
+      "src.services.storageService.getTrainingData",
+      "src.services.aiService.trainModel"
     ],
     "source_code": "async function startTraining(onProgress) {\n  try {\n    // Get training data from storage\n    const trainingData = await getTrainingData();\n    \n    if (trainingData.images.length < MIN_TRAINING_SAMPLES) {\n      return {\n        success: false,\n        error: `Not enough training data. Need at least ${MIN_TRAINING_SAMPLES} samples.`,\n        samplesCount: trainingData.images.length,\n      };\n    }\n    \n    // Notify progress\n    if (onProgress) {\n      onProgress({ status: 'preparing', message: 'Preparing training data...' });\n    }\n    \n    // Start training\n    if (onProgress) {\n      onProgress({ status: 'training', message: 'Training model...' });\n    }\n    \n    const result = await trainModel(trainingData);\n    \n    if (result.success) {\n      if (onProgress) {\n        onProgress({ status: 'complete', message: 'Training completed!' });\n      }\n      \n      return {\n        success: true,\n        samplesCount: trainingData.images.length,\n        finalLoss: result.finalLoss,\n        finalAccuracy: result.finalAccuracy,\n      };\n    } else {\n      return {\n        success: false,\n        error: result.error,\n      };\n    }\n  } catch (error) {\n    console.error('Error in training process:', error);\n    return {\n      success: false,\n      error: error.message,\n    };\n  }\n}",
     "start_line": 18,
@@ -1388,8 +1388,8 @@
     "file_path": "C:\\Users\\Duy\\Documents\\GitHub\\EcoSorterAI\\src\\services\\trainingService.js",
     "relative_path": "src\\services\\trainingService.js",
     "depends_on": [
-      "src.services.aiService.getModelInfo",
-      "src.services.storageService.getTrainingData"
+      "src.services.storageService.getTrainingData",
+      "src.services.aiService.getModelInfo"
     ],
     "source_code": "async function getTrainingStats() {\n  try {\n    const trainingData = await getTrainingData();\n    const modelInfo = getModelInfo();\n    \n    // Count samples per category\n    const categoryCounts = {};\n    trainingData.labels.forEach(label => {\n      categoryCounts[label] = (categoryCounts[label] || 0) + 1;\n    });\n    \n    return {\n      totalSamples: trainingData.images.length,\n      categoryCounts,\n      modelReady: modelInfo.ready,\n      modelLayers: modelInfo.layers,\n      categories: modelInfo.categories,\n    };\n  } catch (error) {\n    console.error('Error getting training stats:', error);\n    return {\n      totalSamples: 0,\n      categoryCounts: {},\n      modelReady: false,\n    };\n  }\n}",
     "start_line": 129,
