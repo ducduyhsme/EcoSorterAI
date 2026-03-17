@@ -1,0 +1,14 @@
+{
+    "application": {
+        "components": [
+            "android.app.src.main.java.com.ecosorter.ai.MainApplication.MainApplication"
+        ],
+        "children": {}
+    },
+    "activity": {
+        "components": [
+            "android.app.src.main.java.com.ecosorter.ai.MainActivity.MainActivity"
+        ],
+        "children": {}
+    }
+}
