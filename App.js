@@ -66,10 +66,8 @@ export default function App() {
         setIsLoggedIn(true);
       }
       
-      // Initialize TensorFlow model in background
-      initializeModel().catch(error => {
-        console.error('Failed to initialize TensorFlow model:', error);
-      });
+      // Initialize OpenAI config
+      await initializeModel();
     } catch (error) {
       console.error('Error initializing app:', error);
     } finally {
