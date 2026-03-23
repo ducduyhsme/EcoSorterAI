@@ -22,7 +22,8 @@
       "bundleIdentifier": "com.ecosorter.ai",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to capture images of waste for classification.",
-        "NSPhotoLibraryUsageDescription": "This app accesses your photos to allow you to select images of waste for classification."
+        "NSPhotoLibraryUsageDescription": "This app accesses your photos to allow you to select images of waste for classification.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
